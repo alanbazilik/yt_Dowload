@@ -1,20 +1,19 @@
 # Netscape HTTP Cookie File
-# Modelo funcional para yt-dlp (sem valores sensíveis)
+# Modelo gerado para testes com yt-dlp (valores fictícios)
 
 .youtube.com	TRUE	/	FALSE	1893456000	CONSENT	YES+BR.pt-BR
-.youtube.com	TRUE	/	TRUE	1893456000	VISITOR_INFO1_LIVE	MfYw1234567
+.youtube.com	TRUE	/	TRUE	1893456000	VISITOR_INFO1_LIVE	ViSt0r_pl4c3h0ld3r
 .youtube.com	TRUE	/	TRUE	1893456000	PREF	f1=50000000&tz=America.Sao_Paulo
-.youtube.com	TRUE	/	TRUE	1893456000	YSC	YSC_PLACEHOLDER_123456
-.youtube.com	TRUE	/	TRUE	1893456000	SID	SID_PLACEHOLDER_123456789
-.youtube.com	TRUE	/	TRUE	1893456000	HSID	HSID_PLACEHOLDER_ABCDEFG
-.youtube.com	TRUE	/	TRUE	1893456000	SSID	SSID_PLACEHOLDER_987654
-.youtube.com	TRUE	/	TRUE	1893456000	APISID	APISID_PLACEHOLDER_ABCDEF
-.youtube.com	TRUE	/	TRUE	1893456000	SAPISID	SAPISID_PLACEHOLDER_ABCDEF
-.youtube.com	TRUE	/	TRUE	1893456000	LOGIN_INFO	LOGIN_PLACEHOLDER_123456
-.youtube.com	TRUE	/	TRUE	1893456000	__Secure-1PSID	SEC1_PLACEHOLDER_ABCDEFG
-.youtube.com	TRUE	/	TRUE	1893456000	__Secure-3PSID	SEC3_PLACEHOLDER_ABCDEFG
-.youtube.com	TRUE	/	TRUE	1893456000	__Secure-1PAPISID	PAPISID1_PLACEHOLDER_ABC
-.youtube.com	TRUE	/	TRUE	1893456000	__Secure-3PAPISID	PAPISID3_PLACEHOLDER_DEF
-.youtube.com	TRUE	/	TRUE	1893456000	SIDCC	SIDCC_PLACEHOLDER_987654
-.youtube.com	TRUE	/	TRUE	1893456000	__Secure-ENID	ENID_PLACEHOLDER_ABCDEFG
-
+.youtube.com	TRUE	/	TRUE	1893456000	YSC	YSC_placeholder_123
+.youtube.com	TRUE	/	TRUE	1893456000	SID	SID_placeholder_abc123
+.youtube.com	TRUE	/	TRUE	1893456000	HSID	HSID_placeholder_abc123
+.youtube.com	TRUE	/	TRUE	1893456000	SSID	SSID_placeholder_abc123
+.youtube.com	TRUE	/	TRUE	1893456000	APISID	APISID_placeholder_abc123
+.youtube.com	TRUE	/	TRUE	1893456000	SAPISID	SAPISID_placeholder_abc123
+.youtube.com	TRUE	/	TRUE	1893456000	LOGIN_INFO	0:fake_login_info_123
+.youtube.com	TRUE	/	TRUE	1893456000	__Secure-1PSID	secure1_placeholder_123
+.youtube.com	TRUE	/	TRUE	1893456000	__Secure-3PSID	secure3_placeholder_123
+.youtube.com	TRUE	/	TRUE	1893456000	__Secure-1PAPISID	secure1p_placeholder_123
+.youtube.com	TRUE	/	TRUE	1893456000	__Secure-3PAPISID	secure3p_placeholder_123
+.youtube.com	TRUE	/	TRUE	1893456000	SIDCC	sidcc_placeholder_123
+.youtube.com	TRUE	/	TRUE	1893456000	__Secure-ENID	enid_placeholder_123

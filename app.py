@@ -41,31 +41,28 @@ def download():
         temp_id = str(uuid.uuid4())
         filepath = os.path.join(DOWNLOAD_FOLDER, temp_id)
 
-        # ⚡ Configurações yt-dlp ANTI-BOT + COOKIES
+        # ⚡ Configurações yt-dlp anti-bloqueio
         ydl_opts = {
-            "cookiefile": "cookies.txt",    # ← cookies reais aqui
+            "cookiefile": "cookies.txt",
             "format": "bestaudio/best" if type_ == "mp3" else "bestvideo+bestaudio",
             "outtmpl": filepath + ".%(ext)s",
-
-            # 🧩 ESSA PARTE É O BYPASS IMPORTANTE
-            "extractor_args": {
-                "youtube": {
-                    "player_client": ["web", "android", "default"],
-                    "player_skip": ["webpage", "configs"],
-                    "visitor_data": ["CgtiZUZlZ1ZUR0V9dQ=="]  
-                },
-                "youtubetab": {
-                    "skip": ["webpage"]
-                }
-            },
-
-            # Ajuda a evitar bloqueios
             "noplaylist": True,
             "geo_bypass": True,
             "user_agent": (
                 "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
                 "(KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
             ),
+
+            "extractor_args": {
+                "youtube": {
+                    "player_client": ["web", "android", "default"],
+                    "player_skip": ["webpage", "configs"],
+                    "visitor_data": ["CgtiZUZlZ1ZUR0V9dQ=="]
+                },
+                "youtubetab": {
+                    "skip": ["webpage"]
+                }
+            }
         }
 
         if type_ == "mp3":
@@ -75,11 +72,11 @@ def download():
                 "preferredquality": "320"
             }]
 
-        # 🔥 Baixar
+        # 🔥 Download
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=True)
 
-        # 🔧 Determina o arquivo final
+        # 🔧 Arquivo final gerado
         if type_ == "mp3":
             final_file = filepath + ".mp3"
         else:
@@ -92,6 +89,7 @@ def download():
         return jsonify({"error": str(e)}), 500
 
 
+# 🔥 Replit usa porta dinâmica
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8000))
     app.run(host="0.0.0.0", port=port)

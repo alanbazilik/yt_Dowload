@@ -5,12 +5,15 @@ import uuid
 import threading
 import time
 
+# ⛔ Corrige erro "ffmpeg not found" no Replit
+os.environ["PATH"] += os.pathsep + "/usr/bin"
+
 app = Flask(__name__)
 
 DOWNLOAD_FOLDER = "downloads"
 os.makedirs(DOWNLOAD_FOLDER, exist_ok=True)
 
-# 🧹 Limpador automático: remove arquivos após 1h
+# 🧹 Limpador automático
 def cleanup_files():
     while True:
         now = time.time()
@@ -18,7 +21,7 @@ def cleanup_files():
             path = os.path.join(DOWNLOAD_FOLDER, f)
             if os.path.isfile(path) and now - os.path.getmtime(path) > 3600:
                 os.remove(path)
-        time.sleep(600)
+        time.sleep(300)
 
 threading.Thread(target=cleanup_files, daemon=True).start()
 
@@ -41,10 +44,13 @@ def download():
         temp_id = str(uuid.uuid4())
         filepath = os.path.join(DOWNLOAD_FOLDER, temp_id)
 
-        # ⚡ Configurações yt-dlp anti-bloqueio
+        # ⚡ Evita erro quando cookies.txt não existe
+        cookie_file = "cookies.txt" if os.path.exists("cookies.txt") else None
+
+        # ⚡ Configurações recomendadas para REPLIT
         ydl_opts = {
-            "cookiefile": "cookies.txt",
-            "format": "bestaudio/best" if type_ == "mp3" else "bestvideo+bestaudio",
+            "cookiefile": cookie_file,
+            "format": "bestaudio/best" if type_ == "mp3" else "bestvideo[height<=720]+bestaudio/best",
             "outtmpl": filepath + ".%(ext)s",
             "noplaylist": True,
             "geo_bypass": True,
@@ -52,27 +58,16 @@ def download():
                 "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
                 "(KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
             ),
-
-            "extractor_args": {
-                "youtube": {
-                    "player_client": ["web", "android", "default"],
-                    "player_skip": ["webpage", "configs"],
-                    "visitor_data": ["CgtiZUZlZ1ZUR0V9dQ=="]
-                },
-                "youtubetab": {
-                    "skip": ["webpage"]
-                }
-            }
         }
 
         if type_ == "mp3":
             ydl_opts["postprocessors"] = [{
                 "key": "FFmpegExtractAudio",
                 "preferredcodec": "mp3",
-                "preferredquality": "320"
+                "preferredquality": "192"   # 320 falha no Replit → usar 192
             }]
 
-        # 🔥 Download
+        # 🔥 Faz o download
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=True)
 

@@ -10,7 +10,7 @@ app = Flask(__name__)
 DOWNLOAD_FOLDER = "downloads"
 os.makedirs(DOWNLOAD_FOLDER, exist_ok=True)
 
-# 🧹 Limpador automático: remove arquivos com mais de 1 hora
+# 🧹 Limpador automático: remove arquivos após 1h
 def cleanup_files():
     while True:
         now = time.time()
@@ -18,7 +18,7 @@ def cleanup_files():
             path = os.path.join(DOWNLOAD_FOLDER, f)
             if os.path.isfile(path) and now - os.path.getmtime(path) > 3600:
                 os.remove(path)
-        time.sleep(600)  # roda a cada 10 minutos
+        time.sleep(600)
 
 threading.Thread(target=cleanup_files, daemon=True).start()
 
@@ -41,22 +41,31 @@ def download():
         temp_id = str(uuid.uuid4())
         filepath = os.path.join(DOWNLOAD_FOLDER, temp_id)
 
-        # ⚡ Configurações yt-dlp com cookies
+        # ⚡ Configurações yt-dlp ANTI-BOT + COOKIES
         ydl_opts = {
-            "cookies": "cookies.txt",                 # 👈 cookies ativados
+            "cookiefile": "cookies.txt",    # ← cookies reais aqui
             "format": "bestaudio/best" if type_ == "mp3" else "bestvideo+bestaudio",
             "outtmpl": filepath + ".%(ext)s",
 
-            # Evita erro de JS runtime e força modo compatível
+            # 🧩 ESSA PARTE É O BYPASS IMPORTANTE
             "extractor_args": {
                 "youtube": {
-                    "player_client": ["web", "android", "default"]
+                    "player_client": ["web", "android", "default"],
+                    "player_skip": ["webpage", "configs"],
+                    "visitor_data": ["CgtiZUZlZ1ZUR0V9dQ=="]  
+                },
+                "youtubetab": {
+                    "skip": ["webpage"]
                 }
             },
 
-            # Evita "Sign in to confirm you're not a bot"
+            # Ajuda a evitar bloqueios
+            "noplaylist": True,
             "geo_bypass": True,
-            "noplaylist": True
+            "user_agent": (
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+                "(KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
+            ),
         }
 
         if type_ == "mp3":
@@ -66,11 +75,11 @@ def download():
                 "preferredquality": "320"
             }]
 
-        # 🔥 Baixa com yt-dlp
+        # 🔥 Baixar
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=True)
 
-        # Finalização do arquivo
+        # 🔧 Determina o arquivo final
         if type_ == "mp3":
             final_file = filepath + ".mp3"
         else:

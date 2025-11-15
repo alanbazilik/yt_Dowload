@@ -10,16 +10,15 @@ app = Flask(__name__)
 DOWNLOAD_FOLDER = "downloads"
 os.makedirs(DOWNLOAD_FOLDER, exist_ok=True)
 
-# 🧹 Limpador automático (remove arquivos antigos)
+# 🧹 Limpador automático: remove arquivos com mais de 1 hora
 def cleanup_files():
     while True:
         now = time.time()
         for f in os.listdir(DOWNLOAD_FOLDER):
             path = os.path.join(DOWNLOAD_FOLDER, f)
-            if os.path.isfile(path):
-                if now - os.path.getmtime(path) > 3600:  # 1 hora
-                    os.remove(path)
-        time.sleep(600)  # limpa a cada 10 min
+            if os.path.isfile(path) and now - os.path.getmtime(path) > 3600:
+                os.remove(path)
+        time.sleep(600)  # roda a cada 10 minutos
 
 threading.Thread(target=cleanup_files, daemon=True).start()
 
@@ -42,17 +41,22 @@ def download():
         temp_id = str(uuid.uuid4())
         filepath = os.path.join(DOWNLOAD_FOLDER, temp_id)
 
-        # Configurações do yt-dlp
+        # ⚡ Configurações yt-dlp com cookies
         ydl_opts = {
+            "cookies": "cookies.txt",                 # 👈 cookies ativados
             "format": "bestaudio/best" if type_ == "mp3" else "bestvideo+bestaudio",
             "outtmpl": filepath + ".%(ext)s",
 
-            # evita erro de "JavaScript runtime" no YouTube
+            # Evita erro de JS runtime e força modo compatível
             "extractor_args": {
                 "youtube": {
-                    "player_client": ["default"]
+                    "player_client": ["web", "android", "default"]
                 }
-            }
+            },
+
+            # Evita "Sign in to confirm you're not a bot"
+            "geo_bypass": True,
+            "noplaylist": True
         }
 
         if type_ == "mp3":
@@ -62,11 +66,11 @@ def download():
                 "preferredquality": "320"
             }]
 
-        # Baixa o vídeo
+        # 🔥 Baixa com yt-dlp
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=True)
 
-        # Determina a extensão final
+        # Finalização do arquivo
         if type_ == "mp3":
             final_file = filepath + ".mp3"
         else:

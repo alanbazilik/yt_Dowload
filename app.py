@@ -1,49 +1,82 @@
-from flask import Flask, request, send_file
+from flask import Flask, request, send_file, jsonify
 import yt_dlp
 import os
 import uuid
+import threading
+import time
 
 app = Flask(__name__)
 
 DOWNLOAD_FOLDER = "downloads"
 os.makedirs(DOWNLOAD_FOLDER, exist_ok=True)
 
+# 🧹 Limpador automático (remove arquivos antigos)
+def cleanup_files():
+    while True:
+        now = time.time()
+        for f in os.listdir(DOWNLOAD_FOLDER):
+            path = os.path.join(DOWNLOAD_FOLDER, f)
+            if os.path.isfile(path):
+                if now - os.path.getmtime(path) > 3600:  # 1 hora
+                    os.remove(path)
+        time.sleep(600)  # limpa a cada 10 min
+
+threading.Thread(target=cleanup_files, daemon=True).start()
+
+
 @app.route("/")
 def home():
-    return {"status": "running"}, 200
+    return {"status": "online", "message": "API FLASK YT-DLP OK"}, 200
 
 
 @app.route("/download", methods=["POST"])
 def download():
-    data = request.json
-    url = data.get("url")
-    type_ = data.get("type", "mp3")
+    try:
+        data = request.json
+        url = data.get("url")
+        type_ = data.get("type", "mp3")
 
-    if not url:
-        return {"error": "URL não fornecida"}, 400
+        if not url:
+            return jsonify({"error": "URL não fornecida"}), 400
 
-    temp_id = str(uuid.uuid4())
-    filename = f"{temp_id}.{type_}"
-    filepath = os.path.join(DOWNLOAD_FOLDER, temp_id)
+        temp_id = str(uuid.uuid4())
+        filepath = os.path.join(DOWNLOAD_FOLDER, temp_id)
 
-    ydl_opts = {
-        'format': 'bestaudio/best' if type_ == 'mp3' else 'bestvideo+bestaudio',
-        'outtmpl': filepath,
-    }
+        # Configurações do yt-dlp
+        ydl_opts = {
+            "format": "bestaudio/best" if type_ == "mp3" else "bestvideo+bestaudio",
+            "outtmpl": filepath + ".%(ext)s",
 
-    if type_ == 'mp3':
-        ydl_opts['postprocessors'] = [{
-            'key': 'FFmpegExtractAudio',
-            'preferredcodec': 'mp3',
-            'preferredquality': '320',
-        }]
+            # evita erro de "JavaScript runtime" no YouTube
+            "extractor_args": {
+                "youtube": {
+                    "player_client": ["default"]
+                }
+            }
+        }
 
-    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-        ydl.download([url])
+        if type_ == "mp3":
+            ydl_opts["postprocessors"] = [{
+                "key": "FFmpegExtractAudio",
+                "preferredcodec": "mp3",
+                "preferredquality": "320"
+            }]
 
-    final_file = filepath if type_ == "mp4" else filepath + ".mp3"
+        # Baixa o vídeo
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            info = ydl.extract_info(url, download=True)
 
-    return send_file(final_file, as_attachment=True)
+        # Determina a extensão final
+        if type_ == "mp3":
+            final_file = filepath + ".mp3"
+        else:
+            ext = info.get("ext", "mp4")
+            final_file = f"{filepath}.{ext}"
+
+        return send_file(final_file, as_attachment=True)
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 
 if __name__ == "__main__":
